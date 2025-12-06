@@ -36,8 +36,8 @@ use App\Http\Controllers\Expert\MessageController as ExpertMessageController;
 
 // Business Controllers
 use App\Http\Controllers\BusinessController;
-use App\Http\Controllers\Business\DashboardController as BusinessDashboardController;
-
+// use App\Http\Controllers\Business\DashboardController as BusinessDashboardController;
+use App\Http\Controllers\GroupController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -129,6 +129,7 @@ Route::middleware(['auth', 'role:expert'])
         Route::get('/itineraries', [ExpertItineraryController::class, 'index'])->name('itineraries.index');
         Route::get('/itineraries/{itinerary}', [ExpertItineraryController::class, 'show'])->name('itineraries.show');
 
+
         // Travelers
         Route::get('/travelers', [ExpertTravelerController::class, 'index'])->name('travelers.index');
         Route::get('/travelers/{traveler}', [ExpertTravelerController::class, 'show'])->name('travelers.show');
@@ -150,13 +151,13 @@ Route::middleware(['auth', 'role:expert'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:business'])
-    ->prefix('business')
-    ->name('business.')
-    ->group(function () {
+// Route::middleware(['auth', 'role:business'])
+   //  ->prefix('business')
+   //  ->name('business.')
+    // ->group(function () {
 
-        Route::get('/dashboard', [BusinessDashboardController::class, 'index'])->name('dashboard');
-    });
+       // Route::get('/dashboard', [BusinessDashboardController::class, 'index'])->name('dashboard');
+   // });
 
 /*
 |--------------------------------------------------------------------------
@@ -181,6 +182,9 @@ Route::middleware(['auth', 'role:traveler'])
 
         Route::post('itineraries/{itinerary}/generate', [TravelerItineraryController::class, 'generate'])
             ->name('itineraries.generate');
+            // AI refinement chat for itinerary
+        Route::post('itineraries/{itinerary}/ai-refine', [TravelerItineraryController::class, 'aiRefine'])
+            ->name('itineraries.ai-refine');
 
         Route::post('itineraries/{itinerary}/invite', [TravelerItineraryController::class, 'invite'])
             ->name('itineraries.invite');
@@ -276,7 +280,21 @@ Route::get('/itineraries/{itinerary}/pdf', ItineraryPdfController::class)
     ->middleware(['auth'])
     ->name('itineraries.pdf');
 
-/*
+// ----------------------------------------------------------------------------
+// Group Routes
+// ----------------------------------------------------------------------------
+Route::get('/groups', [GroupController::class, 'index']);
+Route::post('/groups', [GroupController::class, 'store']);
+Route::get('/groups/{id}', [GroupController::class, 'show']);
+Route::put('/groups/{id}', [GroupController::class, 'update']);
+Route::delete('/groups/{id}', [GroupController::class, 'destroy']);
+Route::post('/groups/{id}/add-note', [GroupController::class, 'addNote']);
+Route::get('/test-add-note', function () {
+    return view('test-add-note');
+});
+
+
+    /*
 |--------------------------------------------------------------------------
 | Auth Scaffolding
 |--------------------------------------------------------------------------

@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use App\Mail\ItineraryInvitationMail;
 
 class ItineraryController extends Controller
+
 {
     public function __construct(
         protected ItineraryGenerationService $generationService
@@ -320,4 +321,24 @@ class ItineraryController extends Controller
             }
         }
     }
-}
+/*
+|--------------------------------------------------------------------------
+| AI Refinement Chat Feature
+|--------------------------------------------------------------------------
+*/
+public function aiRefine(Request $request, Itinerary $itinerary)
+{
+    $this->authorize('update', $itinerary);
+
+    $request->validate([
+        'message' => 'required|string|max:2000',
+    ]);
+
+    // Temporary placeholder response
+    $reply = "AI refinement placeholder: " . $request->message;
+
+    return response()->json([
+        'reply' => $reply,
+    ]);
+} // close aiRefine method()
+} // close ItineraryController class

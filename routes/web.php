@@ -38,6 +38,7 @@ use App\Http\Controllers\Expert\MessageController as ExpertMessageController;
 use App\Http\Controllers\BusinessController;
 // use App\Http\Controllers\Business\DashboardController as BusinessDashboardController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\Traveler\AIItineraryController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -182,9 +183,12 @@ Route::middleware(['auth', 'role:traveler'])
 
         Route::post('itineraries/{itinerary}/generate', [TravelerItineraryController::class, 'generate'])
             ->name('itineraries.generate');
-            // AI refinement chat for itinerary
-        Route::post('itineraries/{itinerary}/ai-refine', [TravelerItineraryController::class, 'aiRefine'])
+        // AI refinement chat for itinerary
+        Route::get('itineraries/{itinerary}/ai-refine', [AIItineraryController::class, 'showForm'])
+            ->name('itineraries.ai-refine.form');
+        Route::post('itineraries/{itinerary}/ai-refine', [AIItineraryController::class, 'refine'])
             ->name('itineraries.ai-refine');
+        
 
         Route::post('itineraries/{itinerary}/invite', [TravelerItineraryController::class, 'invite'])
             ->name('itineraries.invite');

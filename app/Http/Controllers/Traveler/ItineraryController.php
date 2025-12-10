@@ -163,7 +163,7 @@ class ItineraryController extends Controller
         ]);
     
         // Update related countries
-        $itinerary->countries()->sync($validated['countries']);
+        $itinerary->countries()->sync($validated['countries'] ?? []);
     
         // Handle collaborators / invitations based on collaboration flag
         if (!$itinerary->is_collaborative) {

@@ -97,11 +97,12 @@
                                 Edit Itinerary
                             </a>
                             {{-- AI Refine Button --}}
-                            <a herf="{{ route('traveler.itineraries.ai-refine.form', $itinerary->id) }}"
-                                class="group flex items-center gap-2 px-5 py-2.5 rounded-full border border-copper text-copper hover:bg-copper hover:text-white transition-all duration-200 ease-out hover:scale-[1.02] shadow-soft hover:shadow-glow">
+                            <a href="{{ route('traveler.itineraries.ai-refine.form', $itinerary) }}"
+                                class="group flex items-center gap-2 px-5 py-2.5 rounded-full border border-copper text-copper 
+                                       hover:bg-copper hover:text-white transition-all duration-200 ease-out hover:scale-[1.02] shadow-soft hover:shadow-glow">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none"
                                         ViewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin= d="m12 2015 9-5-9-5-9-5-9-5" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m12 2015 9-5-9-5-9-5-9-5" />
                                 </svg>
                                 Refine with AI
                             </a>

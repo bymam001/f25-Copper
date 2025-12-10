@@ -5,114 +5,111 @@ namespace App\Http\Controllers\Traveler;
 use App\Http\Controllers\Controller;
 use App\Models\Itinerary;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
+use OpenAI\Laravel\Facades\OpenAI;
+use App\Services\OpenAIService;
 
 class AIItineraryController extends Controller
 {
-    /**
-     * Show the AI refinement form
-     */
+    protected OpenAIService $ai;
+
+    public function __construct(OpenAIService $ai)
+    {
+        $this->ai = $ai;
+    }
+
     public function showForm(Itinerary $itinerary)
     {
+        $this->authorize('update', $itinerary);
+
         return view('traveler.itineraries.ai-refine', [
             'itinerary' => $itinerary,
-            'response' => null,
+            'response'  => null,
         ]);
     }
 
-    /**
-     * Handle AI refinement request
-     */
     public function refine(Request $request, Itinerary $itinerary)
     {
-        $request->validate([
-            'prompt' => 'required|string|max:1000',
+        $this->authorize('update', $itinerary);
+
+        $data = $request->validate([
+            'prompt' => ['required', 'string', 'max:1000'],
         ]);
 
-        $prompt = $request->prompt;
+        $summary       = 'No response from AI.';
+        $changedFields = [];
 
-        /*
-        |--------------------------------------------------------------------------
-        | 1. SEND MESSAGE TO OPENAI
-        |--------------------------------------------------------------------------
-        */
-        $response = Http::withToken(env('OPENAI_API_KEY'))->post(
-            'https://api.openai.com/v1/chat/completions',
-            [
-                'model' => 'gpt-4o-mini',
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => "You are an itinerary editing assistant. ALWAYS reply in JSON. 
-                        
-                        Valid actions:
-                        - update_time
-                        - add_activity
-                        - remove_activity
+        try {
+            // Build one big prompt that tells AI to return ONLY JSON
+            $prompt = <<<EOT
+You help users tweak travel itineraries.
 
-                        Example:
-                        {\"action\": \"update_time\", \"item\": \"Museum\", \"new_time\": \"16:00\"}"
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => $prompt
-                    ]
-                ]
-            ]
-        );
+Given the current itinerary and a user request, respond ONLY with valid JSON.
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. PARSE AI RESPONSE
-        |--------------------------------------------------------------------------
-        */
-        $content = $response->json()['choices'][0]['message']['content'] ?? '{}';
-        $ai = json_decode($content, true);
+The JSON must have:
+  "summary" (string) and
+  "updates" (object with any of: name, description, destination, location, start_date, end_date).
 
-        if (!is_array($ai)) {
-            $ai = ["error" => "AI did not produce valid JSON"];
+Dates should be YYYY-MM-DD. No extra text outside the JSON.
+
+Here is the data:
+
+EOT;
+
+            $prompt .= json_encode([
+                'itinerary' => $itinerary->toArray(),
+                'request'   => $data['prompt'],
+            ]);
+
+            // Call our OpenAIService
+            $raw = $this->ai->ask($prompt) ?? '';
+
+            $decoded = json_decode($raw, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $summary      = $decoded['summary'] ?? $summary;
+                $updatesInput = $decoded['updates'] ?? [];
+
+                $allowed = ['name', 'description', 'destination', 'location', 'start_date', 'end_date'];
+                $updates = [];
+
+                foreach ($allowed as $field) {
+                    if (!array_key_exists($field, $updatesInput) ||
+                        $updatesInput[$field] === null ||
+                        $updatesInput[$field] === '') {
+                        continue;
+                    }
+
+                    if (in_array($field, ['start_date', 'end_date'], true)) {
+                        try {
+                            $updates[$field] = Carbon::parse($updatesInput[$field])->format('Y-m-d');
+                        } catch (\Throwable $e) {
+                            // ignore bad dates
+                        }
+                    } else {
+                        $updates[$field] = $updatesInput[$field];
+                    }
+                }
+
+                if (!empty($updates)) {
+                    $itinerary->update($updates);
+                    $itinerary->refresh();
+                    $changedFields = array_keys($updates);
+                }
+            } else {
+                $summary = 'Could not parse AI response.';
+            }
+        } catch (\Throwable $e) {
+            $summary = 'AI service error: ' . $e->getMessage();
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 3. UPDATE DATABASE
-        |--------------------------------------------------------------------------
-        */
-
-        if (isset($ai['action'])) {
-
-            // Example: Update itinerary start time
-            if ($ai['action'] === 'update_time') {
-                $itinerary->update([
-                    'start_time' => $ai['new_time'] ?? $itinerary->start_time
-                ]);
-            }
-
-            // Add a new itinerary item
-            if ($ai['action'] === 'add_activity' && $itinerary->relationLoaded('items')) {
-                $itinerary->items()->create([
-                    'title' => $ai['item'] ?? 'New Activity',
-                    'time' => $ai['new_time'] ?? '00:00',
-                ]);
-            }
-
-            // Remove an itinerary item
-            if ($ai['action'] === 'remove_activity' && $itinerary->relationLoaded('items')) {
-                $itinerary->items()
-                    ->where('title', $ai['item'])
-                    ->delete();
-            }
+        if (!empty($changedFields)) {
+            $summary .= ' (Updated fields: ' . implode(', ', $changedFields) . '.)';
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | 4. RETURN VIEW WITH UPDATED DATA
-        |--------------------------------------------------------------------------
-        */
 
         return view('traveler.itineraries.ai-refine', [
-            'itinerary' => $itinerary->fresh(),
-            'response' => $ai,
+            'itinerary' => $itinerary,
+            'response'  => $summary,
         ]);
     }
 }

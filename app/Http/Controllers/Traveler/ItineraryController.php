@@ -86,7 +86,10 @@ class ItineraryController extends Controller
             'is_collaborative'      => $request->boolean('is_collaborative'),
         ]);
 
-        $itinerary->countries()->attach($validated['countries']);
+        
+        if (!empty($validated['countries'] ?? [])){
+            $itinerary->countries()->attach($validated['countries']);
+        }
 
         if ($itinerary->is_collaborative) {
             $this->processInvitations($itinerary, $validated['invite_emails'] ?? []);
@@ -284,8 +287,8 @@ class ItineraryController extends Controller
     {
         return $request->validate([
             'name'             => ['required', 'string', 'max:255'],
-            'countries'        => ['required', 'array', 'min:1'],
-            'countries.*'      => ['integer', 'exists:countries,id'],
+            'countries'        => ['nullable', 'array'],
+            'countries.*'      => ['nullable','integer', 'exists:countries,id'],
             'destination'      => ['nullable', 'string', 'max:255'],
             'location'         => ['nullable', 'string', 'max:255'],
             'preference_profile_id' => ['nullable', 'integer', 'exists:preference_profiles,id'],

@@ -52,11 +52,40 @@
                                 @error('description')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
                             </div>
 
-                            {{-- Auto-select United States as country--}}
-                            @php
-                                $us = \App\Models\Country::where('name', 'United States')->first();
-                            @endphp
-                            <input type="hidden" name="countries[]" value="{{ $us->id ?? 1 }}">
+                            {{-- Country --}}
+                            <div calss="md:col-span-2">
+                                <lable class="block text-sm font-semibold mb-2">Country</lable>
+
+                                @php
+                                    $countries = \App\Models\Country::orderBy('name')->get();
+                                    // fallback so dropdown is not empty
+                                    if ($countries->isEmpty()) {
+                                        $countries = collect([
+                                            (object)['id' => 1, 'name' => 'United States'],
+                                        ]);
+                                    }
+                                    $selectedCountries = old('countries', []);
+                                    @endphp
+
+                                <stlect 
+                                    name="countries[]" 
+                                    class="w-full border rounded-xl px-4 py-2.5 dark:bg-sand-900"
+                                    required
+                                >
+                                    <option value="">-- Select a country --</option>
+                                    @foreach($countries as $c)
+                                        <option value="{{ $c->id }}" 
+                                        {{ in_array($c->id, $selectedCountries) ? 'selected' : '' }}>
+                                            {{ $c->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                @error('countries')
+                                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
 
                             {{-- City --}}
                             @php
@@ -210,7 +239,7 @@
                                 Create Itinerary
                             </button>
                         </div>
-                    </form>
+                        </form>
                 </div>
             </div>
         </div>

@@ -71,7 +71,11 @@
 
         {{-- Main --}}
         <main class="flex-1 transition-colors duration-300">
-            {{ $slot }}
+        
+            @isset($slot)
+                {{ $slot }}
+            @endisset
+            @yield('content')
         </main>
 
         {{-- Footer --}}

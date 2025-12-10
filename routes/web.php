@@ -9,6 +9,7 @@ use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\PlaceReviewController;
 use App\Http\Controllers\ItineraryPdfController;
 
+
 // Shared Controllers
 use App\Http\Controllers\ProfileController;
 
@@ -26,7 +27,9 @@ use App\Http\Controllers\Traveler\ItineraryInvitationController;
 use App\Http\Controllers\Traveler\RewardsController;
 use App\Http\Controllers\Traveler\ExpertsController as TravelerExpertsController;
 use App\Http\Controllers\Traveler\MessageController as TravelerMessageController;
-
+use App\Http\Controllers\Traveler\TravelPreferenceController;
+use App\Http\Controllers\Traveler\TravelGroupController;
+use App\Services\OpenAIService;
 // Expert Controllers
 use App\Http\Controllers\Expert\DashboardController as ExpertDashboardController;
 use App\Http\Controllers\Expert\ItineraryController as ExpertItineraryController;
@@ -174,6 +177,26 @@ Route::middleware(['auth', 'role:traveler'])
         Route::get('/dashboard', [TravelerDashboardController::class, 'index'])
             ->name('dashboard');
 
+        // Travel Preferences
+        Route::get('travel_preferences', [TravelPreferenceController::class, 'edit'])
+            ->name('travel_preferences.edit');
+        Route::post('travel_preferences', [TravelPreferenceController::class, 'update'])
+            ->name('travel_preferences.update');
+
+        // Travel Groups
+        Route::get('travel_groups', [TravelGroupController::class, 'index'])
+            ->name('travel_groups.index');
+        Route::get('travel_groups/create', [TravelGroupController::class, 'create'])
+            ->name('travel_groups.create');
+        Route::post('travel_groups', [TravelGroupController::class, 'store'])
+            ->name('travel_groups.store');
+        // NEW: show a single group
+        Route::get('travel_groups/{group}', [TravelGroupController::class, 'show'])
+            ->name('travel_groups.show');
+        // NEW: send an invite to a group
+        Route::post('travel_groups/{group}/invite', [TravelGroupController::class, 'invite'])
+            ->name('travel_groups.invite');
+
         /*
         |--------------------------------------------------------------------------
         | Itineraries
@@ -202,6 +225,15 @@ Route::middleware(['auth', 'role:traveler'])
         Route::resource('itineraries.items', ItineraryItemController::class)
             ->shallow()
             ->only(['store', 'update', 'destroy']);
+        // AI Test Route
+        Route::get('/test-ai', function (OpenAIService $ai) {
+            $reply = $ai->ask("write a short travel tip for visiting Williamsburg, Virginia");
+            if (!$reply) {
+                return "Test route: reached, but AI did not return response.
+            please check your openAI API key or Internet connection.";
+            }
+            return "<pre>" . e($reply) . "</pre>";
+        });
 
         /*
         |--------------------------------------------------------------------------

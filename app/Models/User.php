@@ -49,6 +49,13 @@ class User extends Authenticatable
 
     public function sentMessages() { return $this->hasMany(Message::class, 'sender_id'); }
     public function receivedMessages() { return $this->hasMany(Message::class, 'receiver_id'); }
+    public function travelpreference() 
+    { return $this->hasOne(\App\Models\TravelPreference::class);
+     }
+     public function travelGroupsCreated()
+     {
+        return $this->hasMany(\App\Models\TravelGroup::class, 'creator_id');
+     }
 
     // === Universal Profile Photo Accessor ===
     public function getProfilePhotoUrlAttribute(): string

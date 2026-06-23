@@ -1,9 +1,42 @@
-Members
+# AI Travel Planning Platform (Internship Project)
 
-Jandra D. Arias Tavarez  jaria003@odu.edu
-William Poston  wpost003@odu.edu
-Stephen Usselman  susse001@odu.edu
-Crystal Rivas  cvasq006@odu.edu
-William Mbandi  wmban001@odu.edu
-Balemual Ymamu  bymam001@odu.edu
-Fredrick Terling  fterl001@odu.edu
+## Overview
+
+AI-powered travel planning platform that generates personalized travel recommendations and itineraries using OpenAI APIs.
+
+## Technologies Used
+
+- PHP
+- Laravel
+- MySQL
+- JavaScript
+- OpenAI API
+- DigitalOcean
+- Git & GitHub
+- VS Code
+- Jira
+
+## My Contributions
+
+- Integrated OpenAI APIs to generate personalized travel recommendations and itineraries
+- Developed full-stack itinerary generation and refinement features using Laravel and JavaScript
+- Designed database schemas, migrations, and seeders for travel and review data
+- Built RESTful APIs for itinerary and review management
+- Contributed frontend enhancements and user experience improvements
+- Collaborated with developers using GitHub workflows, code reviews, and Agile practices
+- Assisted with DigitalOcean cloud deployment and application maintenance
+
+## Skills Demonstrated
+
+- Full-Stack Development
+- AI Integration
+- REST API Development
+- Database Design
+- Cloud Computing
+- Software Engineering
+- Backend Development
+- Problem Solving
+
+## Note
+
+This repository reflects my contributions as a Software Developer Intern on an AI-powered travel planning platform. The repository appears as a fork because development was performed within the internship team's project structure. The work shown here represents my internship contributions and development experience.

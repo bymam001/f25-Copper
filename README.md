@@ -16,7 +16,7 @@ AI-powered travel planning platform that generates personalized travel recommend
 - VS Code
 - Jira
 
-## My Contributions
+## My Individual Contributions
 
 - Integrated OpenAI APIs to generate personalized travel recommendations and itineraries
 - Developed full-stack itinerary generation and refinement features using Laravel and JavaScript
